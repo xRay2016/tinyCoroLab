@@ -11,6 +11,14 @@ RUN apt-get update && \
     gdb
 
 WORKDIR /project
+
+RUN wget https://sourceware.org/pub/valgrind/valgrind-3.21.0.tar.bz2 && \
+    tar -xjvf valgrind-3.21.0.tar.bz2 && \
+    cd valgrind-3.21.0 && \
+    ./configure && \
+    make && \
+    make install
+
 # 拷贝third_party中的liburing
 COPY third_party/liburing /project/liburing
 RUN cd /project/liburing && \

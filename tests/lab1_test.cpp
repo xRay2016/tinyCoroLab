@@ -157,6 +157,7 @@ TEST_F(TaskTest, VoidTaskMove2)
 // test the move assignment operator of task, which will suspend once.
 TEST_F(TaskTest, VoidTaskMove3)
 {
+
     auto p1 = func2(vec);
     p1.resume();
     ASSERT_EQ(vec[0], 1);
