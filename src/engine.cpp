@@ -9,7 +9,6 @@ using std::memory_order_acq_rel;
 using std::memory_order_acquire;
 using std::memory_order_relaxed;
 using std::memory_order_release;
-using std::memory_order_seq_cst;
 
 auto engine::init() noexcept -> void
 {
@@ -95,14 +94,14 @@ auto engine::handle_cqe_entry(urcptr cqe) noexcept -> void
 auto engine::poll_submit() noexcept -> void
 {
     // TODO[lab2a]: Add you codes
-    auto num_task_wait = m_num_io_wait_submit.load(memory_order_seq_cst);
+    auto num_task_wait = m_num_io_wait_submit.load(memory_order_acquire);
     if (num_task_wait > 0)
     {
         int num = m_upxy.submit();
         num_task_wait -= num;
 
-        m_num_io_running.fetch_add(num, memory_order_seq_cst);
-        m_num_io_wait_submit.fetch_sub(num, memory_order_seq_cst);
+        m_num_io_running.fetch_add(num, memory_order_acq_rel);
+        m_num_io_wait_submit.fetch_sub(num, memory_order_acq_rel);
     }
 
     // wait event fd at first
@@ -113,7 +112,7 @@ auto engine::poll_submit() noexcept -> void
     }
 
     // peek cqe is non block, so no need to check flag
-    auto wait_count = std::min(m_urc.size(), m_num_io_running.load(memory_order_seq_cst));
+    auto wait_count = std::min(m_urc.size(), m_num_io_running.load(memory_order_acquire));
     auto num        = m_upxy.peek_batch_cqe(m_urc.data(), wait_count);
     if (num != 0)
     {
@@ -122,21 +121,21 @@ auto engine::poll_submit() noexcept -> void
             handle_cqe_entry(m_urc[i]);
         }
         m_upxy.cq_advance(num);
-        m_num_io_running.fetch_sub(num, memory_order_seq_cst);
+        m_num_io_running.fetch_sub(num, memory_order_acq_rel);
     }
 }
 
 auto engine::add_io_submit() noexcept -> void
 {
     // TODO[lab2a]: Add you codes
-    m_num_io_wait_submit.fetch_add(1, memory_order_seq_cst);
+    m_num_io_wait_submit.fetch_add(1, memory_order_acq_rel);
     wake_up(io_flag);
 }
 
 auto engine::empty_io() noexcept -> bool
 {
     // TODO[lab2a]: Add you codes
-    return m_num_io_wait_submit.load(memory_order_seq_cst) == 0 && m_num_io_running.load(memory_order_seq_cst) == 0;
+    return m_num_io_wait_submit.load(memory_order_acquire) == 0 && m_num_io_running.load(memory_order_acquire) == 0;
 }
 
 auto engine::wake_up(uint64_t val) noexcept -> void
