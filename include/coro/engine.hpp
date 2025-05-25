@@ -184,6 +184,7 @@ private:
     uint32_t       m_id;
     atomic<size_t> m_num_io_wait_submit;
     atomic<size_t> m_num_io_running;
+    atomic<bool>   m_deinited{false};
     uring_proxy    m_upxy;
 
     // store task handle

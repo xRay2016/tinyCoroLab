@@ -153,30 +153,21 @@ public:
      *
      * @param cqe
      */
-    inline auto seen_cqe_entry(urcptr cqe) noexcept -> void CORO_INLINE
-    {
-        io_uring_cqe_seen(&m_uring, cqe);
-    }
+    inline auto seen_cqe_entry(urcptr cqe) noexcept -> void CORO_INLINE { io_uring_cqe_seen(&m_uring, cqe); }
 
     /**
      * @brief get the free uring sqe
      *
      * @return ursptr
      */
-    inline auto get_free_sqe() noexcept -> ursptr CORO_INLINE
-    {
-        return io_uring_get_sqe(&m_uring);
-    }
+    inline auto get_free_sqe() noexcept -> ursptr CORO_INLINE { return io_uring_get_sqe(&m_uring); }
 
     /**
      * @brief submit all sqe entry and return the number of submitted sqe entry
      *
      * @return int
      */
-    inline auto submit() noexcept -> int CORO_INLINE
-    {
-        return io_uring_submit(&m_uring);
-    }
+    inline auto submit() noexcept -> int CORO_INLINE { return io_uring_submit(&m_uring); }
 
     /**
      * @brief use io_uring_for_each_cqe to process cqe entry
@@ -225,6 +216,10 @@ public:
     inline auto write_eventfd(uint64_t num) noexcept -> void CORO_INLINE
     {
         auto ret = eventfd_write(m_efd, num);
+        if (ret == -1)
+        {
+            log::error("eventfd_write failed: {} (errno={})", strerror(errno), errno);
+        }
         assert(ret != -1 && "eventfd write error");
     }
 
@@ -233,10 +228,7 @@ public:
      *
      * @param num
      */
-    inline auto cq_advance(unsigned int num) noexcept -> void CORO_INLINE
-    {
-        io_uring_cq_advance(&m_uring, num);
-    }
+    inline auto cq_advance(unsigned int num) noexcept -> void CORO_INLINE { io_uring_cq_advance(&m_uring, num); }
 
     /**
      * @brief Get one fixed fd

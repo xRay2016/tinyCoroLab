@@ -49,7 +49,8 @@ using std::unique_ptr;
 using detail::ginfo;
 using detail::linfo;
 
-using engine = detail::engine;
+using engine  = detail::engine;
+using stop_cb = std::function<void()>;
 
 class scheduler;
 
@@ -99,6 +100,8 @@ public:
 
     inline auto submit_task(task<void>& task) noexcept -> void { submit_task(task.handle()); }
 
+    inline auto set_stop_cb(stop_cb cb) noexcept -> void { m_stop_cb = cb; }
+
     /**
      * @brief submit one task handle to context
      *
@@ -142,6 +145,9 @@ private:
     CORO_ALIGN engine   m_engine;
     unique_ptr<jthread> m_job;
     ctx_id              m_id;
+
+    atomic<int> m_reference_count = 0;
+    stop_cb     m_stop_cb;
 
     // TODO[lab2b]: Add more member variables if you need
 };

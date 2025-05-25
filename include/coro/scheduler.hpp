@@ -11,6 +11,15 @@
 namespace coro
 {
 
+template<typename T>
+struct atomic_ref_wrapper
+{
+    alignas(std::atomic_ref<T>::required_alignment) T val;
+};
+
+using stop_token_type = std::atomic<int>;
+using stop_flag_type  = std::vector<atomic_ref_wrapper<int>>;
+
 /**
  * @brief scheduler just control context to run and stop,
  * it also use dispatcher to decide which context can accept the task
@@ -73,6 +82,9 @@ private:
     detail::ctx_container                               m_ctxs;
     detail::dispatcher<coro::config::kDispatchStrategy> m_dispatcher;
     // TODO[lab2b]: Add more member variables if you need
+
+    stop_flag_type  m_ctx_stop_flag;
+    stop_token_type m_stop_token;
 };
 
 inline void submit_to_scheduler(task<void>&& task) noexcept

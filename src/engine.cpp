@@ -25,7 +25,9 @@ auto engine::init() noexcept -> void
 
 auto engine::deinit() noexcept -> void
 {
+    m_deinited.store(true, std::memory_order_release);
     // TODO[lab2a]: Add you codes
+    linfo.egn = nullptr;
     m_upxy.deinit();
 
     m_num_io_wait_submit = 0;
