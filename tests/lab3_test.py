@@ -1,5 +1,5 @@
-import sys
 import subprocess
+import sys
 import time
 
 RED = "\033[31m"
@@ -7,14 +7,14 @@ GREEN = "\033[32m"
 RESET = "\033[0m"
 
 # test cases: [(<threadnum>, <port>) ...]
-paras = [(1, 8000), (0, 8001)]
+paras = [(1, 18000), (0, 18001)]
 
 
 def run_test(
-    thread_num: int,
-    server_port: int,
-    benchprogram_path: str,
-    benchtool_path: str,
+        thread_num: int,
+        server_port: int,
+        benchprogram_path: str,
+        benchtool_path: str,
 ) -> bool:
     try:
         program_process = subprocess.Popen(

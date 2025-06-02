@@ -1,4 +1,4 @@
-FROM gcc:13.3.0
+FROM gcc:14.3.0
 
 LABEL maintainer="xray20161@gmail.com"
 LABEL version="1.0"
@@ -19,8 +19,16 @@ RUN wget https://sourceware.org/pub/valgrind/valgrind-3.21.0.tar.bz2 && \
     make && \
     make install
 
-# 拷贝third_party中的liburing
-COPY third_party/liburing /project/liburing
+# install rustup & cargo
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustc --version && cargo --version && rustup --version
+RUN rustup default stable
+
+# install liburing 2.9
+RUN git clone https://github.com/axboe/liburing.git && \
+    cd /project/liburing && \
+    git checkout liburing-2.9
 RUN cd /project/liburing && \
     ./configure --cc=gcc --cxx=g++ && \
     make -j4 && \
