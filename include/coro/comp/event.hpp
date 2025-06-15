@@ -85,7 +85,7 @@ private:
 template<typename return_type = void>
 class event : public detail::event_base, public detail::container<return_type>
 {
-private:
+public:
     using event_base::event_base;
     struct awaiter : public detail::event_base::awaiter_base
     {
@@ -97,7 +97,6 @@ private:
         }
     };
 
-public:
     auto wait() noexcept -> awaiter { return awaiter{local_context(), *this}; } // return awaitable
     template<typename value_type>
     auto set(value_type&& value) noexcept -> void
@@ -110,14 +109,12 @@ public:
 template<>
 class event<> : public detail::event_base
 {
-private:
+public:
     using event_base::event_base;
     struct [[CORO_AWAIT_HINT]] awaiter : public detail::event_base::awaiter_base
     {
         using awaiter_base::awaiter_base;
     };
-
-public:
     auto wait() noexcept -> awaiter { return awaiter{local_context(), *this}; } // return awaitable
     auto set() noexcept -> void { return detail::event_base::set_state(); }
 

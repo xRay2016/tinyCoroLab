@@ -12,6 +12,7 @@
 
 #include <atomic>
 
+#include "coro/comp/event.hpp"
 #include "coro/detail/types.hpp"
 
 namespace coro
@@ -38,15 +39,20 @@ namespace coro
 class latch
 {
 public:
-    latch(std::uint64_t count) noexcept {}
+    using event_t = coro::event<>;
+    latch(std::uint64_t count) noexcept : m_count(count) {}
     latch(const latch&)                    = delete;
     latch(latch&&)                         = delete;
     auto operator=(const latch&) -> latch& = delete;
     auto operator=(latch&&) -> latch&      = delete;
 
-    auto count_down() noexcept -> void {}
+    auto count_down() noexcept -> void;
 
-    auto wait() noexcept -> detail::noop_awaiter { return {}; }
+    auto wait() noexcept -> event_t::awaiter;
+
+private:
+    atomic<uint64_t> m_count;
+    event_t          m_event;
 };
 
 /**
