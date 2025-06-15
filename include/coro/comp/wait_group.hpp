@@ -13,13 +13,14 @@
 #include <atomic>
 #include <coroutine>
 
+#include "coro/context.hpp"
 #include "coro/detail/types.hpp"
 
 namespace coro
 {
 /**
  * @brief Welcome to tinycoro lab4c, in this part you will build the basic coroutine
- * synchronization component——wait_group by modifing wait_group.hpp and wait_group.cpp.
+ * synchronization componentï¿½ï¿½wait_group by modifing wait_group.hpp and wait_group.cpp.
  * Please ensure you have read the document of lab4c.
  *
  * @warning You should carefully consider whether each implementation should be thread-safe.
@@ -34,20 +35,42 @@ namespace coro
  */
 
 class context;
-
+using std::atomic;
 // TODO[lab4c]: This wait_group is an example to make complie success,
 // You should delete it and add your implementation, I don't care what you do,
 // but keep the member function and construct function's declaration same with example.
 class wait_group
 {
 public:
-    explicit wait_group(int count = 0) noexcept {}
+    struct awaiter
+    {
+        awaiter(context& ctx, wait_group& wg) noexcept : m_ctx(ctx), m_wg(wg) {};
 
-    auto add(int count) noexcept -> void {};
+        auto await_ready() noexcept -> bool;
+        auto await_suspend(std::coroutine_handle<> handle) noexcept -> bool;
+        auto await_resume() noexcept -> void;
 
-    auto done() noexcept -> void {};
+        context&                m_ctx;
+        wait_group&             m_wg;
+        std::coroutine_handle<> m_handle{nullptr};
+        awaiter*                m_next{nullptr};
+    };
 
-    auto wait() noexcept -> detail::noop_awaiter { return {}; };
+    explicit wait_group(int count = 0) noexcept : m_count(count) {}
+
+    auto add(int count) noexcept -> void;
+
+    auto done() noexcept -> void;
+
+    auto wait() noexcept -> awaiter { return awaiter{local_context(), *this}; };
+
+private:
+    auto resume_all() noexcept -> void;
+    auto register_awaiter(awaiter* awaiter) noexcept -> bool;
+
+private:
+    atomic<int>                 m_count;
+    atomic<detail::awaiter_ptr> m_state{nullptr};
 };
 
 }; // namespace coro
