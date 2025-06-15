@@ -32,7 +32,7 @@ auto scheduler::loop_impl() noexcept -> void
                 // fetch_sub return origin value of m_stop_token
                 // if flag = 0, stop_impl is called when m_stop_token is already 0
                 // if flag = 1, stop_impl is called when m_stop_token is 1
-                if (this->m_stop_token.fetch_sub(flag, memory_order_acq_rel) == flag)
+                if (flag != 0 && this->m_stop_token.fetch_sub(flag, memory_order_acq_rel) == flag)
                 {
                     this->stop_impl();
                 }
@@ -53,7 +53,7 @@ auto scheduler::stop_impl() noexcept -> void
     // This is an example which just notify stop signal to each context,
     // if you don't need this, function just ignore or delete it
     // wait all context finished
-    log::info("call stop_impl");
+    //    log::info("call stop_impl");
     for (auto i = 0; i < m_ctx_cnt; i++)
     {
         m_ctxs[i]->notify_stop();

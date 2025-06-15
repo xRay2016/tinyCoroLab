@@ -215,6 +215,10 @@ public:
 
     inline auto write_eventfd(uint64_t num) noexcept -> void CORO_INLINE
     {
+        if (m_efd == -1)
+        {
+            return;
+        }
         auto ret = eventfd_write(m_efd, num);
         if (ret == -1)
         {
